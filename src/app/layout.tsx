@@ -1,10 +1,6 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
-import Sidebar from '@/components/Sidebar';
-import Providers from '@/components/Providers';
-
-const inter = Inter({ subsets: ['latin'] });
+import ClientLayout from '@/components/ClientLayout';
 
 export const metadata: Metadata = {
   title: 'PeerPair',
@@ -16,18 +12,5 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <html lang="tr" className="light">
-      <body className={`${inter.className} min-h-screen bg-gray-50 dark:bg-gray-900`}>
-        <Providers>
-          <div className="flex min-h-screen">
-            <Sidebar />
-            <main className="flex-1 ml-64 p-8">
-              {children}
-            </main>
-          </div>
-        </Providers>
-      </body>
-    </html>
-  );
+  return <ClientLayout>{children}</ClientLayout>;
 } 
