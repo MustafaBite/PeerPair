@@ -3,7 +3,6 @@
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
 import { useTheme } from '@/context/ThemeContext';
 
 interface MenuItem {
@@ -23,11 +22,6 @@ const menuItems: MenuItem[] = [
 export default function Sidebar() {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
-  
-  const { data: userData, isLoading } = useQuery({
-    queryKey: ['user'],
-    queryFn: () => fetch('/api/user').then(res => res.json()),
-  });
 
   return (
     <motion.div
@@ -40,21 +34,15 @@ export default function Sidebar() {
         <h1 className="text-2xl font-bold text-primary-600 dark:text-primary-400">PeerPair</h1>
       </div>
 
-      {/* Kullanıcı Bilgileri */}
+      {/* Giriş Yap Butonu */}
       <div className="p-4 border-b dark:border-gray-700">
-        <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-            {isLoading ? '...' : userData?.name?.[0] || '👤'}
-          </div>
-          <div>
-            <p className="font-semibold text-gray-800 dark:text-gray-200">
-              {isLoading ? 'Yükleniyor...' : userData?.name || 'Kullanıcı'}
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {isLoading ? '...' : userData?.department || 'Bölüm'}
-            </p>
-          </div>
-        </div>
+        <Link
+          href="/login"
+          className="flex items-center space-x-3 p-2 rounded-lg bg-primary-100 dark:bg-primary-900 text-primary-600 dark:text-primary-400 hover:bg-primary-200 dark:hover:bg-primary-800 transition-colors"
+        >
+          <span className="text-xl">🔑</span>
+          <span className="font-semibold">Giriş Yap</span>
+        </Link>
       </div>
 
       {/* Menü */}
