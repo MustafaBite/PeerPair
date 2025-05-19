@@ -1,75 +1,90 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-
-interface User {
-  firstName: string;
-  lastName: string;
-  email: string;
-}
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
-  user: User | null;
   isLoggedIn: boolean;
-  login: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
-  register: (fullName: string, email: string, password: string) => Promise<void>;
+  username: string | null;
+  login: (name: string, password: string) => Promise<void>;
   logout: () => void;
+  register: (name: string, password: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [username, setUsername] = useState<string | null>(null);
+  const router = useRouter();
 
-  const login = async (email: string, password: string, firstName: string, lastName: string) => {
-    try {
-      if (!email || !password || !firstName || !lastName) {
-        throw new Error('Tüm alanlar gereklidir');
-      }
-
-      if (password.length < 6) {
-        throw new Error('Şifre en az 6 karakter olmalıdır');
-      }
-
-      // Burada gerçek bir API çağrısı yapılabilir
-      setUser({ firstName, lastName, email });
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const storedUsername = localStorage.getItem('username');
+    if (token && storedUsername) {
       setIsLoggedIn(true);
-    } catch (error) {
-      throw error;
+      setUsername(storedUsername);
     }
-  };
+  }, []);
 
-  const register = async (fullName: string, email: string, password: string) => {
+  const login = async (name: string, password: string) => {
     try {
-      if (!fullName || !email || !password) {
-        throw new Error('Tüm alanlar gereklidir');
+      const response = await fetch('http://localhost:3001/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Giriş yapılırken bir hata oluştu');
       }
 
-      if (password.length < 6) {
-        throw new Error('Şifre en az 6 karakter olmalıdır');
-      }
-
-      if (fullName.length < 3) {
-        throw new Error('Ad soyad en az 3 karakter olmalıdır');
-      }
-
-      // Burada gerçek bir API çağrısı yapılabilir
-      const [firstName, lastName] = fullName.split(' ');
-      setUser({ firstName, lastName: lastName || '', email });
+      localStorage.setItem('token', 'dummy-token'); // Gerçek bir token sistemi eklenebilir
+      localStorage.setItem('username', data.user.name);
       setIsLoggedIn(true);
+      setUsername(data.user.name);
     } catch (error) {
       throw error;
     }
   };
 
   const logout = () => {
-    setUser(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
     setIsLoggedIn(false);
+    setUsername(null);
+    router.push('/');
+  };
+
+  const register = async (name: string, password: string) => {
+    try {
+      const response = await fetch('http://localhost:3001/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Kayıt olurken bir hata oluştu');
+      }
+
+      // Kayıt başarılı olduğunda otomatik giriş yap
+      await login(name, password);
+    } catch (error) {
+      throw error;
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoggedIn, login, register, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, username, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   );

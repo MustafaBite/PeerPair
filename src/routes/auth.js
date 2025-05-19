@@ -1,86 +1,115 @@
 const express = require('express');
 const router = express.Router();
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const db = require('../db');
+const bcrypt = require('bcrypt');
 
-// Kayıt olma
+// Kayıt olma route'u
 router.post('/register', async (req, res) => {
-    try {
-        const { email, password, name, university, department, interests } = req.body;
+  const { name, password } = req.body;
 
-        // Email kontrolü
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(400).json({ message: 'Bu email zaten kullanımda' });
+  // Gerekli alanların kontrolü
+  if (!name || !password) {
+    return res.status(400).json({
+      success: false,
+      message: 'Ad Soyad ve Şifre alanları zorunludur'
+    });
+  }
+
+  try {
+    // Kullanıcı adının benzersiz olup olmadığını kontrol et
+    db.get('SELECT * FROM users WHERE name = ?', [name], async (err, user) => {
+      if (err) {
+        return res.status(500).json({
+          success: false,
+          message: 'Veritabanı hatası'
+        });
+      }
+
+      if (user) {
+        return res.status(400).json({
+          success: false,
+          message: 'Bu isimde bir kullanıcı zaten mevcut'
+        });
+      }
+
+      // Şifreyi hashle
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Yeni kullanıcıyı kaydet
+      db.run(
+        'INSERT INTO users (name, password) VALUES (?, ?)',
+        [name, hashedPassword],
+        function(err) {
+          if (err) {
+            return res.status(500).json({
+              success: false,
+              message: 'Kullanıcı kaydedilirken bir hata oluştu'
+            });
+          }
+
+          res.status(201).json({
+            success: true,
+            message: 'Kullanıcı başarıyla kaydedildi',
+            userId: this.lastID
+          });
         }
-
-        // Yeni kullanıcı oluştur
-        const user = new User({
-            email,
-            password,
-            name,
-            university,
-            department,
-            interests
-        });
-
-        await user.save();
-
-        // JWT token oluştur
-        const token = jwt.sign(
-            { userId: user._id },
-            process.env.JWT_SECRET,
-            { expiresIn: '24h' }
-        );
-
-        res.status(201).json({
-            token,
-            user: {
-                id: user._id,
-                email: user.email,
-                name: user.name
-            }
-        });
-    } catch (error) {
-        res.status(500).json({ message: 'Sunucu hatası', error: error.message });
-    }
+      );
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Sunucu hatası'
+    });
+  }
 });
 
-// Giriş yapma
-router.post('/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
+// Giriş yapma route'u
+router.post('/login', (req, res) => {
+  const { name, password } = req.body;
 
-        // Kullanıcıyı bul
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(400).json({ message: 'Geçersiz email veya şifre' });
-        }
+  // Gerekli alanların kontrolü
+  if (!name || !password) {
+    return res.status(400).json({
+      success: false,
+      message: 'Ad Soyad ve Şifre alanları zorunludur'
+    });
+  }
 
-        // Şifreyi kontrol et
-        const isMatch = await user.comparePassword(password);
-        if (!isMatch) {
-            return res.status(400).json({ message: 'Geçersiz email veya şifre' });
-        }
-
-        // JWT token oluştur
-        const token = jwt.sign(
-            { userId: user._id },
-            process.env.JWT_SECRET,
-            { expiresIn: '24h' }
-        );
-
-        res.json({
-            token,
-            user: {
-                id: user._id,
-                email: user.email,
-                name: user.name
-            }
-        });
-    } catch (error) {
-        res.status(500).json({ message: 'Sunucu hatası', error: error.message });
+  // Kullanıcıyı bul
+  db.get('SELECT * FROM users WHERE name = ?', [name], async (err, user) => {
+    if (err) {
+      return res.status(500).json({
+        success: false,
+        message: 'Veritabanı hatası'
+      });
     }
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Kullanıcı bulunamadı'
+      });
+    }
+
+    // Şifreyi kontrol et
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return res.status(401).json({
+        success: false,
+        message: 'Geçersiz şifre'
+      });
+    }
+
+    // Başarılı giriş
+    res.json({
+      success: true,
+      message: 'Giriş başarılı',
+      user: {
+        id: user.id,
+        name: user.name
+      }
+    });
+  });
 });
 
 module.exports = router; 
