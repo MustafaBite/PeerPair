@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Gruplar</title>
+  <link rel="stylesheet" href="gruplar.css">
+</head>
+<body data-theme="light">
+  <div class="container">
+    <h1>Gruplar</h1>
+    <button id="tema-degistir" class="tema-btn">🌙 Karanlık Tema</button>
+    
+    <input type="text" id="arama-kutusu" placeholder="🔍 Grup ara...">
+    
+    <div id="grup-listesi"></div>
+
+    <h2>Yeni Grup Oluştur</h2>
+    <form id="grup-formu">
+      <input type="text" id="grup-adi" placeholder="Grup Adı" required>
+      <input type="text" id="grup-aciklama" placeholder="Açıklama" required>
+      <div class="radio-group">
+        <label class="radio-label">
+          <input type="radio" name="grup-turu" value="Herkese Açık" checked>
+          <span>🌍 Herkese Açık</span>
+        </label>
+        <label class="radio-label">
+          <input type="radio" name="grup-turu" value="Sadece Grup Üyelerine Özel">
+          <span>🔒 Sadece Grup Üyelerine Özel</span>
+        </label>
+      </div>
+      <button type="submit">✨ Oluştur</button>
+    </form>
+  </div>
+
+  <!-- Modal (Açılır pencere) -->
+  <div id="grup-modal" class="modal">
+    <div class="modal-icerik">
+      <span class="kapat">&times;</span>
+      <div id="modal-detay"></div>
+    </div>
+  </div>
+
+  <script src="gruplar.js"></script>
+</body>
+</html>
+<!-- test -->
