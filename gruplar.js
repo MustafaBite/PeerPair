@@ -50,7 +50,8 @@ document.getElementById('grup-formu').addEventListener('submit', function(e) {
     ad: ad,
     aciklama: aciklama,
     tur: tur,
-    uyeSayisi: 1
+    uyeSayisi: 1,
+    uyeMi: true // Oluşturan kişi otomatik üye
   };
 
   gruplar.push(yeniGrup);
@@ -81,6 +82,11 @@ function gruplariListele() {
       grup.uyeSayisi = 0;
     }
 
+    // Eğer grup.uyeMi yoksa, false olarak başlat
+    if (typeof grup.uyeMi === "undefined") {
+      grup.uyeMi = false;
+    }
+
     const grupDiv = document.createElement('div');
     grupDiv.className = 'grup';
     grupDiv.innerHTML = `
@@ -89,7 +95,10 @@ function gruplariListele() {
       <div class="grup-aciklama">${grup.aciklama}</div>
       <div class="grup-uyeler">👥 Üye Sayısı: ${grup.uyeSayisi}</div>
       <div style="margin-top:15px;">
-        <button class="katil-btn" data-index="${orijinalIndex}">✨ Katıl</button>
+        ${grup.uyeMi
+          ? `<button class="ayril-btn" data-index="${orijinalIndex}">🚪 Ayrıl</button>`
+          : `<button class="katil-btn" data-index="${orijinalIndex}">✨ Katıl</button>`
+        }
         <button class="sil-btn" data-index="${orijinalIndex}">🗑️ Sil</button>
       </div>
     `;
@@ -110,6 +119,24 @@ function ekleEventListeners() {
         gruplar[index].uyeSayisi = 0;
       }
       gruplar[index].uyeSayisi += 1;
+      gruplar[index].uyeMi = true; // Üye olundu
+      localStorage.setItem('gruplar', JSON.stringify(gruplar));
+      gruplariListele();
+    });
+  });
+
+  // Ayrıl butonları
+  const ayrilButonlari = document.querySelectorAll('.ayril-btn');
+  ayrilButonlari.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const index = this.getAttribute('data-index');
+      if (!gruplar[index].uyeSayisi || isNaN(gruplar[index].uyeSayisi)) {
+        gruplar[index].uyeSayisi = 1;
+      }
+      if (gruplar[index].uyeSayisi > 0) {
+        gruplar[index].uyeSayisi -= 1;
+      }
+      gruplar[index].uyeMi = false; // Üyelikten çıkıldı
       localStorage.setItem('gruplar', JSON.stringify(gruplar));
       gruplariListele();
     });
