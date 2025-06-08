@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface MenuItem {
   title: string;
@@ -24,12 +24,27 @@ const menuItems: MenuItem[] = [
 export default function Sidebar() {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
-  const { isLoggedIn, username, login, logout } = useAuth();
+  const { isLoggedIn, username, login, logout, user } = useAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth >= 768) {
+        setIsOpen(true);
+      }
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const handleLogin = async () => {
     try {
@@ -45,101 +60,157 @@ export default function Sidebar() {
     }
   };
 
+  const SidebarContent = () => (
+    <>
+      {/* Logo */}
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-[#f1f1f1]">PeerPair</h1>
+      </div>
+
+      {/* Kullanıcı Bilgileri */}
+      {isLoggedIn && user && (
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <span className="text-xl">👤</span>
+              <span className="font-semibold text-gray-900 dark:text-[#f1f1f1]">{user.fullName}</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-xl">🏫</span>
+              <span className="text-gray-700 dark:text-gray-300">{user.faculty}</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="text-xl">🎓</span>
+              <span className="text-gray-700 dark:text-gray-300">{user.grade}. Sınıf</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Profil Butonu */}
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700 relative">
+        <button
+          onClick={() => setShowProfileMenu(!showProfileMenu)}
+          className="w-full flex items-center space-x-3 p-2 rounded-lg bg-gray-100 dark:bg-[#2a2a2a] text-gray-900 dark:text-[#f1f1f1] hover:bg-gray-200 dark:hover:bg-[#333333] transition-colors"
+        >
+          <span className="text-xl">👤</span>
+          <span className="font-semibold">Profilim</span>
+        </button>
+
+        {/* Profil Menüsü */}
+        {showProfileMenu && (
+          <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#2a2a2a] rounded-lg shadow-lg overflow-hidden z-50">
+            {isLoggedIn ? (
+              <>
+                <Link
+                  href="/profile"
+                  className="block p-3 text-gray-900 dark:text-[#f1f1f1] hover:bg-gray-100 dark:hover:bg-[#333333] transition-colors"
+                  onClick={() => setShowProfileMenu(false)}
+                >
+                  Profil Bilgileri
+                </Link>
+                <Link
+                  href="/profile/edit"
+                  className="block p-3 text-gray-900 dark:text-[#f1f1f1] hover:bg-gray-100 dark:hover:bg-[#333333] transition-colors"
+                  onClick={() => setShowProfileMenu(false)}
+                >
+                  Profil Düzenle
+                </Link>
+                <button
+                  onClick={() => {
+                    logout();
+                    setShowProfileMenu(false);
+                  }}
+                  className="w-full p-3 text-left text-gray-900 dark:text-[#f1f1f1] hover:bg-gray-100 dark:hover:bg-[#333333] transition-colors"
+                >
+                  Çıkış Yap
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => {
+                    setShowLoginModal(true);
+                    setShowProfileMenu(false);
+                  }}
+                  className="w-full p-3 text-left text-gray-900 dark:text-[#f1f1f1] hover:bg-gray-100 dark:hover:bg-[#333333] transition-colors"
+                >
+                  Giriş Yap
+                </button>
+                <Link
+                  href="/register"
+                  className="block p-3 text-gray-900 dark:text-[#f1f1f1] hover:bg-gray-100 dark:hover:bg-[#333333] transition-colors"
+                  onClick={() => setShowProfileMenu(false)}
+                >
+                  Kayıt Ol
+                </Link>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Menü */}
+      <nav className="h-[calc(100vh-16rem)] overflow-y-auto">
+        <ul className="p-4 space-y-2">
+          {menuItems.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                className={`flex items-center space-x-3 p-2 rounded-lg transition-colors ${
+                  pathname === item.href
+                    ? 'bg-gray-100 dark:bg-[#2a2a2a] text-gray-900 dark:text-[#f1f1f1]'
+                    : 'text-gray-600 dark:text-[#f1f1f1] hover:bg-gray-100 dark:hover:bg-[#2a2a2a]'
+                }`}
+                onClick={() => isMobile && setIsOpen(false)}
+              >
+                <span className="text-xl">{item.icon}</span>
+                <span>{item.title}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      {/* Tema Değiştirme Butonu */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-700">
+        <button
+          onClick={toggleTheme}
+          className="w-full flex items-center justify-center space-x-2 p-2 rounded-lg bg-gray-100 dark:bg-[#2a2a2a] text-gray-900 dark:text-[#f1f1f1] hover:bg-gray-200 dark:hover:bg-[#333333] transition-colors"
+        >
+          <span>{theme === 'light' ? '🌙' : '☀️'}</span>
+          <span>{theme === 'light' ? 'Karanlık Tema' : 'Aydınlık Tema'}</span>
+        </button>
+      </div>
+    </>
+  );
+
   return (
     <>
+      {/* Hamburger Menu Button */}
+      {isMobile && (
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="fixed top-4 left-4 z-50 p-2 rounded-lg bg-white dark:bg-[#1e1e1e] shadow-lg"
+        >
+          <span className="text-2xl">{isOpen ? '✕' : '☰'}</span>
+        </button>
+      )}
+
+      {/* Sidebar */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        className="fixed top-0 left-0 h-screen w-64 bg-white dark:bg-[#1e1e1e] shadow-lg z-50"
+        animate={{ 
+          opacity: 1, 
+          x: isMobile ? (isOpen ? 0 : -300) : 0,
+          width: isMobile ? 300 : 256
+        }}
+        transition={{ duration: 0.3 }}
+        className={`fixed top-0 left-0 h-screen bg-white dark:bg-[#1e1e1e] shadow-lg z-40 ${
+          isMobile ? 'w-[300px]' : 'w-64'
+        }`}
       >
-        {/* Logo */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-[#f1f1f1]">PeerPair</h1>
-        </div>
-
-        {/* Profil Butonu */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700 relative">
-          <button
-            onClick={() => setShowProfileMenu(!showProfileMenu)}
-            className="w-full flex items-center space-x-3 p-2 rounded-lg bg-gray-100 dark:bg-[#2a2a2a] text-gray-900 dark:text-[#f1f1f1] hover:bg-gray-200 dark:hover:bg-[#333333] transition-colors"
-          >
-            <span className="text-xl">👤</span>
-            <span className="font-semibold">Profilim</span>
-          </button>
-
-          {/* Profil Menüsü */}
-          {showProfileMenu && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-[#2a2a2a] rounded-lg shadow-lg overflow-hidden">
-              {isLoggedIn ? (
-                <>
-                  <div className="p-3 border-b border-gray-200 dark:border-gray-700">
-                    <p className="text-gray-900 dark:text-[#f1f1f1]">Hoş geldin, {username}</p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      logout();
-                      setShowProfileMenu(false);
-                    }}
-                    className="w-full p-3 text-left text-gray-900 dark:text-[#f1f1f1] hover:bg-gray-100 dark:hover:bg-[#333333] transition-colors"
-                  >
-                    Çıkış Yap
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => {
-                      setShowLoginModal(true);
-                      setShowProfileMenu(false);
-                    }}
-                    className="w-full p-3 text-left text-gray-900 dark:text-[#f1f1f1] hover:bg-gray-100 dark:hover:bg-[#333333] transition-colors"
-                  >
-                    Giriş Yap
-                  </button>
-                  <Link
-                    href="/register"
-                    className="block p-3 text-gray-900 dark:text-[#f1f1f1] hover:bg-gray-100 dark:hover:bg-[#333333] transition-colors"
-                    onClick={() => setShowProfileMenu(false)}
-                  >
-                    Kayıt Ol
-                  </Link>
-                </>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Menü */}
-        <nav className="h-[calc(100vh-16rem)] overflow-y-auto">
-          <ul className="p-4 space-y-2">
-            {menuItems.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className={`flex items-center space-x-3 p-2 rounded-lg transition-colors ${
-                    pathname === item.href
-                      ? 'bg-gray-100 dark:bg-[#2a2a2a] text-gray-900 dark:text-[#f1f1f1]'
-                      : 'text-gray-600 dark:text-[#f1f1f1] hover:bg-gray-100 dark:hover:bg-[#2a2a2a]'
-                  }`}
-                >
-                  <span className="text-xl">{item.icon}</span>
-                  <span>{item.title}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        {/* Tema Değiştirme Butonu */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-700">
-          <button
-            onClick={toggleTheme}
-            className="w-full flex items-center justify-center space-x-2 p-2 rounded-lg bg-gray-100 dark:bg-[#2a2a2a] text-gray-900 dark:text-[#f1f1f1] hover:bg-gray-200 dark:hover:bg-[#333333] transition-colors"
-          >
-            <span>{theme === 'light' ? '🌙' : '☀️'}</span>
-            <span>{theme === 'light' ? 'Karanlık Tema' : 'Aydınlık Tema'}</span>
-          </button>
-        </div>
+        <SidebarContent />
       </motion.div>
 
       {/* Login Modal */}
@@ -199,7 +270,7 @@ export default function Sidebar() {
             </div>
             <button
               onClick={() => setShowLoginModal(false)}
-              className="absolute top-4 right-4 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none"
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
             >
               ✕
             </button>

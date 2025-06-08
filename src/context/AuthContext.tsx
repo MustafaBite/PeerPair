@@ -1,90 +1,183 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 
+interface User {
+  id: number;
+  fullName: string;
+  email: string;
+  faculty: string;
+  grade: number;
+}
+
 interface AuthContextType {
+  user: User | null;
   isLoggedIn: boolean;
-  username: string | null;
-  login: (name: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (userData: {
+    fullName: string;
+    email: string;
+    password: string;
+    faculty: string;
+    grade: number;
+  }) => Promise<void>;
   logout: () => void;
-  register: (name: string, password: string) => Promise<void>;
+  updateProfile: (userData: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+async function fetchWithRetry(url: string, options: RequestInit, retries = 3): Promise<Response> {
+  try {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response;
+  } catch (error) {
+    if (retries > 0) {
+      console.log(`Retrying... ${retries} attempts left`);
+      await new Promise(resolve => setTimeout(resolve, 1000)); // 1 saniye bekle
+      return fetchWithRetry(url, options, retries - 1);
+    }
+    throw error;
+  }
+}
+
+async function handleResponse<T>(response: Response): Promise<T> {
+  const contentType = response.headers.get('content-type');
+  if (!contentType || !contentType.includes('application/json')) {
+    throw new Error('API yanıtı JSON formatında değil');
+  }
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Bir hata oluştu');
+  }
+  return data;
+}
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    const storedUsername = localStorage.getItem('username');
-    if (token && storedUsername) {
-      setIsLoggedIn(true);
-      setUsername(storedUsername);
+    if (token) {
+      fetchWithRetry(`${API_BASE_URL}/auth/profile`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+        .then(handleResponse)
+        .then(data => {
+          setUser(data.user);
+          setIsLoggedIn(true);
+        })
+        .catch(error => {
+          console.error('Profile fetch error:', error);
+          localStorage.removeItem('token');
+          setUser(null);
+          setIsLoggedIn(false);
+        });
     }
   }, []);
 
-  const login = async (name: string, password: string) => {
+  const login = async (email: string, password: string) => {
     try {
-      const response = await fetch('http://localhost:3001/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, password }),
-      });
+      const data = await handleResponse<{ token: string; user: User }>(
+        await fetchWithRetry(`${API_BASE_URL}/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, password })
+        })
+      );
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Giriş yapılırken bir hata oluştu');
-      }
-
-      localStorage.setItem('token', 'dummy-token'); // Gerçek bir token sistemi eklenebilir
-      localStorage.setItem('username', data.user.name);
+      localStorage.setItem('token', data.token);
+      setUser(data.user);
       setIsLoggedIn(true);
-      setUsername(data.user.name);
     } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
+  };
+
+  const register = async (userData: {
+    fullName: string;
+    email: string;
+    password: string;
+    faculty: string;
+    grade: number;
+  }) => {
+    try {
+      const data = await handleResponse<{ token: string; user: User }>(
+        await fetchWithRetry(`${API_BASE_URL}/auth/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(userData)
+        })
+      );
+
+      localStorage.setItem('token', data.token);
+      setUser(data.user);
+      setIsLoggedIn(true);
+    } catch (error) {
+      console.error('Register error:', error);
       throw error;
     }
   };
 
   const logout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('username');
+    setUser(null);
     setIsLoggedIn(false);
-    setUsername(null);
     router.push('/');
   };
 
-  const register = async (name: string, password: string) => {
+  const updateProfile = async (userData: Partial<User>) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('Oturum açmanız gerekiyor');
+    }
+
     try {
-      const response = await fetch('http://localhost:3001/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, password }),
-      });
+      const data = await handleResponse<{ user: User }>(
+        await fetchWithRetry(`${API_BASE_URL}/auth/profile`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(userData)
+        })
+      );
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Kayıt olurken bir hata oluştu');
-      }
-
-      // Kayıt başarılı olduğunda otomatik giriş yap
-      await login(name, password);
+      setUser(data.user);
     } catch (error) {
+      console.error('Profile update error:', error);
       throw error;
     }
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, username, login, logout, register }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoggedIn,
+        login,
+        register,
+        logout,
+        updateProfile
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

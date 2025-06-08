@@ -1,27 +1,87 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
+const mongoose = require('mongoose')
 
-// Veritabanı bağlantısını oluştur
-const db = new sqlite3.Database(path.join(__dirname, 'peerpair.db'), (err) => {
-  if (err) {
-    console.error('Veritabanına bağlanırken hata oluştu:', err.message);
-  } else {
-    console.log('SQLite veritabanına bağlandı');
-    // Users tablosunu oluştur
-    db.run(`
-      CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        password TEXT NOT NULL
-      )
-    `, (err) => {
-      if (err) {
-        console.error('Tablo oluşturulurken hata:', err.message);
-      } else {
-        console.log('Users tablosu hazır');
-      }
-    });
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/peerpair'
+
+mongoose.connect(MONGODB_URI)
+  .then(() => {
+    console.log('MongoDB bağlantısı başarılı')
+  })
+  .catch((error) => {
+    console.error('MongoDB bağlantı hatası:', error)
+    process.exit(1)
+  })
+
+// User şeması
+const userSchema = new mongoose.Schema({
+  fullName: {
+    type: String,
+    required: [true, 'Ad Soyad zorunludur']
+  },
+  email: {
+    type: String,
+    required: [true, 'E-posta zorunludur'],
+    unique: true,
+    lowercase: true,
+    trim: true
+  },
+  password: {
+    type: String,
+    required: [true, 'Şifre zorunludur']
+  },
+  faculty: {
+    type: String,
+    required: [true, 'Fakülte zorunludur']
+  },
+  grade: {
+    type: Number,
+    required: [true, 'Sınıf zorunludur']
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
   }
-});
+})
 
-module.exports = db; 
+// Session şeması
+const sessionSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: [true, 'Başlık zorunludur']
+  },
+  description: {
+    type: String,
+    required: [true, 'Açıklama zorunludur']
+  },
+  creator: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  participants: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  maxParticipants: {
+    type: Number,
+    default: 4
+  },
+  status: {
+    type: String,
+    enum: ['active', 'completed', 'cancelled'],
+    default: 'active'
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+})
+
+// Model oluşturma
+const User = mongoose.model('User', userSchema)
+const Session = mongoose.model('Session', sessionSchema)
+
+module.exports = {
+  User,
+  Session,
+  mongoose
+} 

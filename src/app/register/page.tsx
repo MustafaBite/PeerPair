@@ -1,30 +1,67 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '@/context/ThemeContext';
+import { useAuth } from '@/context/AuthContext';
+import Link from 'next/link';
+import PasswordInput from '@/components/PasswordInput';
 
-export default function Register() {
-  const router = useRouter();
-  const { register } = useAuth();
-  const { theme } = useTheme();
+const faculties = [
+  'Mühendislik Fakültesi',
+  'Fen-Edebiyat Fakültesi',
+  'İktisadi ve İdari Bilimler Fakültesi',
+  'Tıp Fakültesi',
+  'Diş Hekimliği Fakültesi',
+  'Eczacılık Fakültesi',
+  'Mimarlık Fakültesi',
+  'Eğitim Fakültesi',
+  'Hukuk Fakültesi',
+  'İletişim Fakültesi'
+];
+
+const grades = [1, 2, 3, 4, 5, 6];
+
+export default function RegisterPage() {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     password: '',
+    confirmPassword: '',
+    faculty: '',
+    grade: ''
   });
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
+  const { register } = useAuth();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Şifreler eşleşmiyor');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      await register(formData.fullName, formData.email, formData.password);
+      await register({
+        fullName: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+        faculty: formData.faculty,
+        grade: parseInt(formData.grade)
+      });
       router.push('/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Kayıt olurken bir hata oluştu');
@@ -33,24 +70,26 @@ export default function Register() {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white dark:bg-[#0f0f0f]">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white dark:bg-[#1e1e1e] rounded-lg shadow">
-        <h2 className="text-3xl font-bold text-center text-gray-900 dark:text-[#f1f1f1]">Ücretsiz Kaydolun</h2>
-        {error && (
-          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded relative" role="alert">
-            <span className="block sm:inline">{error}</span>
-          </div>
-        )}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-gray-100 dark:from-dark-bg dark:to-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-gray-100">
+            Yeni Hesap Oluşturun
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+            Veya{' '}
+            <Link
+              href="/login"
+              className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
+            >
+              mevcut hesabınıza giriş yapın
+            </Link>
+          </p>
+        </div>
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="space-y-4">
+          <div className="rounded-md shadow-sm space-y-4">
             <div>
               <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Ad Soyad
@@ -60,60 +99,118 @@ export default function Register() {
                 name="fullName"
                 type="text"
                 required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-[#2a2a2a] text-gray-900 dark:text-[#f1f1f1] placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 value={formData.fullName}
                 onChange={handleChange}
-                disabled={isLoading}
-                placeholder="Adınız ve soyadınız"
+                className="input mt-1"
+                placeholder="Ad Soyad"
               />
             </div>
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                E-posta
+                E-posta Adresi
               </label>
               <input
                 id="email"
                 name="email"
                 type="email"
+                autoComplete="email"
                 required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-[#2a2a2a] text-gray-900 dark:text-[#f1f1f1] placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 value={formData.email}
                 onChange={handleChange}
-                disabled={isLoading}
+                className="input mt-1"
                 placeholder="ornek@email.com"
               />
             </div>
-            <div className="relative">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                Şifre
+
+            <div>
+              <label htmlFor="faculty" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Fakülte
               </label>
-              <input
-                id="password"
-                name="password"
-                type={showPassword ? "text" : "password"}
+              <select
+                id="faculty"
+                name="faculty"
                 required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-[#2a2a2a] text-gray-900 dark:text-[#f1f1f1] placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                value={formData.password}
+                value={formData.faculty}
                 onChange={handleChange}
-                disabled={isLoading}
-                placeholder="••••••••"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                className="select mt-1"
               >
-                {showPassword ? '👁️' : '👁️‍🗨️'}
-              </button>
+                <option value="">Fakülte Seçin</option>
+                {faculties.map(faculty => (
+                  <option key={faculty} value={faculty}>
+                    {faculty}
+                  </option>
+                ))}
+              </select>
             </div>
+
+            <div>
+              <label htmlFor="grade" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Sınıf
+              </label>
+              <select
+                id="grade"
+                name="grade"
+                required
+                value={formData.grade}
+                onChange={handleChange}
+                className="select mt-1"
+              >
+                <option value="">Sınıf Seçin</option>
+                {grades.map(grade => (
+                  <option key={grade} value={grade}>
+                    {grade}. Sınıf
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <PasswordInput
+              id="password"
+              name="password"
+              label="Şifre"
+              required
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="••••••••"
+            />
+
+            <PasswordInput
+              id="confirmPassword"
+              name="confirmPassword"
+              label="Şifre Tekrar"
+              required
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              placeholder="••••••••"
+            />
           </div>
-          <button
-            type="submit"
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-green-700 dark:hover:bg-green-800"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Kayıt yapılıyor...' : 'Kaydol'}
-          </button>
+
+          {error && (
+            <div className="rounded-md bg-red-50 dark:bg-red-900/50 p-4">
+              <div className="flex">
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+                    {error}
+                  </h3>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="btn btn-primary w-full flex justify-center"
+            >
+              {isLoading ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                'Kayıt Ol'
+              )}
+            </button>
+          </div>
         </form>
       </div>
     </div>

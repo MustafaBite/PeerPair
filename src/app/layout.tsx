@@ -1,16 +1,26 @@
-import type { Metadata } from 'next';
-import './globals.css';
-import ClientLayout from '@/components/ClientLayout';
+import { Inter } from 'next/font/google'
+import Providers from '@/components/Providers'
+import './globals.css'
 
-export const metadata: Metadata = {
-  title: 'PeerPair',
-  description: 'Üniversite öğrencileri için sosyal platform',
-};
+const inter = Inter({ subsets: ['latin'] })
+
+export const metadata = {
+  title: 'PeerPair - Study Together',
+  description: 'Connect with peers and study together in real-time',
+}
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
-  return <ClientLayout>{children}</ClientLayout>;
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>
+        <Providers>
+          {children}
+        </Providers>
+      </body>
+    </html>
+  )
 } 
