@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fakültelerden Arkadaş Bul</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f4f6fa;
+      color: #102542;
+    }
+    .menu {
+      background: #102542;
+      color: #fff;
+      padding: 16px 0;
+      text-align: center;
+      font-size: 1.2rem;
+      letter-spacing: 2px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .menu a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 16px;
+      transition: color 0.2s;
+    }
+    .menu a:hover {
+      color: #f4f6fa;
+      text-decoration: underline;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 32px auto;
+      padding: 0 16px;
+    }
+    h1 {
+      color: #102542;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .fakulte-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+    }
+    .fakulte-card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(16,37,66,0.07);
+      padding: 32px 20px 24px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.15s;
+    }
+    .fakulte-card:hover {
+      transform: translateY(-6px) scale(1.03);
+      box-shadow: 0 6px 24px rgba(16,37,66,0.13);
+    }
+    .fakulte-card h3 {
+      margin: 0 0 16px 0;
+      color: #102542;
+      font-size: 1.2rem;
+      text-align: center;
+    }
+    .arkadas-btn {
+      background: #102542;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 24px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 12px;
+      transition: background 0.2s;
+    }
+    .arkadas-btn:hover {
+      background: #1a3966;
+    }
+    @media (max-width: 700px) {
+      .container {
+        padding: 0 4px;
+      }
+      .fakulte-card {
+        padding: 20px 8px 16px 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="menu">
+    <a href="#fakulteler">Fakülteler</a>
+    <a href="#">Hakkımızda</a>
+    <a href="#">İletişim</a>
+  </div>
+  <div class="container" id="fakulteler">
+    <h1>Fakültelerden Arkadaş Bul</h1>
+    <div class="fakulte-grid">
+      <div class="fakulte-card">
+        <h3>Eğitim Fakültesi</h3>
+        <button class="arkadas-btn" onclick="arkadasBul('Eğitim Fakültesi')">Arkadaş Bul</button>
+      </div>
+      <div class="fakulte-card">
+        <h3>Eczacılık Fakültesi</h3>
+        <button class="arkadas-btn" onclick="arkadasBul('Eczacılık Fakültesi')">Arkadaş Bul</button>
+      </div>
+      <div class="fakulte-card">
+        <h3>Fen Fakültesi</h3>
+        <button class="arkadas-btn" onclick="arkadasBul('Fen Fakültesi')">Arkadaş Bul</button>
+      </div>
+      <div class="fakulte-card">
+        <h3>İnsan ve Toplum Bilimleri Fakültesi</h3>
+        <button class="arkadas-btn" onclick="arkadasBul('İnsan ve Toplum Bilimleri Fakültesi')">Arkadaş Bul</button>
+      </div>
+      <div class="fakulte-card">
+        <h3>İktisadi ve İdari Bilimler Fakültesi</h3>
+        <button class="arkadas-btn" onclick="arkadasBul('İktisadi ve İdari Bilimler Fakültesi')">Arkadaş Bul</button>
+      </div>
+      <div class="fakulte-card">
+        <h3>İlahiyat Fakültesi</h3>
+        <button class="arkadas-btn" onclick="arkadasBul('İlahiyat Fakültesi')">Arkadaş Bul</button>
+      </div>
+      <div class="fakulte-card">
+        <h3>İletişim Fakültesi</h3>
+        <button class="arkadas-btn" onclick="arkadasBul('İletişim Fakültesi')">Arkadaş Bul</button>
+      </div>
+      <div class="fakulte-card">
+        <h3>Mühendislik Fakültesi</h3>
+        <button class="arkadas-btn" onclick="arkadasBul('Mühendislik Fakültesi')">Arkadaş Bul</button>
+      </div>
+      <div class="fakulte-card">
+        <h3>Su Ürünleri Fakültesi</h3>
+        <button class="arkadas-btn" onclick="arkadasBul('Su Ürünleri Fakültesi')">Arkadaş Bul</button>
+      </div>
+      <div class="fakulte-card">
+        <h3>Teknik Eğitim Fakültesi</h3>
+        <button class="arkadas-btn" onclick="arkadasBul('Teknik Eğitim Fakültesi')">Arkadaş Bul</button>
+      </div>
+      <div class="fakulte-card">
+        <h3>Teknoloji Fakültesi</h3>
+        <button class="arkadas-btn" onclick="arkadasBul('Teknoloji Fakültesi')">Arkadaş Bul</button>
+      </div>
+      <div class="fakulte-card">
+        <h3>Mimarlık Fakültesi</h3>
+        <button class="arkadas-btn" onclick="arkadasBul('Mimarlık Fakültesi')">Arkadaş Bul</button>
+      </div>
+      <div class="fakulte-card">
+        <h3>Diş Hekimliği Fakültesi</h3>
+        <button class="arkadas-btn" onclick="arkadasBul('Diş Hekimliği Fakültesi')">Arkadaş Bul</button>
+      </div>
+      <div class="fakulte-card">
+        <h3>Tıp Fakültesi</h3>
+        <button class="arkadas-btn" onclick="arkadasBul('Tıp Fakültesi')">Arkadaş Bul</button>
+      </div>
+      <div class="fakulte-card">
+        <h3>Sağlık Bilimleri Fakültesi</h3>
+        <button class="arkadas-btn" onclick="arkadasBul('Sağlık Bilimleri Fakültesi')">Arkadaş Bul</button>
+      </div>
+      <div class="fakulte-card">
+        <h3>Veteriner Fakültesi</h3>
+        <button class="arkadas-btn" onclick="arkadasBul('Veteriner Fakültesi')">Arkadaş Bul</button>
+      </div>
+      <div class="fakulte-card">
+        <h3>Spor Bilimleri Fakültesi</h3>
+        <button class="arkadas-btn" onclick="arkadasBul('Spor Bilimleri Fakültesi')">Arkadaş Bul</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    function arkadasBul(fakulte) {
+      alert(fakulte + " için arkadaş bulma sayfasına yönlendirileceksiniz!");
+      // Gerçek projede burada ilgili fakülte sohbet/arkadaşlık sayfasına yönlendirme yapılabilir.
+      // window.location.href = "fakulte-sohbet.html?fakulte=" + encodeURIComponent(fakulte);
+    }
+  </script>
+</body>
+</html>
