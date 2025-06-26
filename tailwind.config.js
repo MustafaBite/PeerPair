@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+<<<<<<< MustafaBitee
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -46,6 +47,12 @@ module.exports = {
         },
       },
     },
+=======
+  content: [],
+  theme: {
+    extend: {},
+>>>>>>> main
   },
   plugins: [],
-} 
+}
+
