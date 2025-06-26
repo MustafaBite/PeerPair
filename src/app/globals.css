@@ -1,0 +1,216 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 45, 45, 45;
+  --background-start-rgb: 255, 255, 255;
+  --background-end-rgb: 244, 244, 244;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 224, 224, 224;
+    --background-start-rgb: 30, 30, 46;
+    --background-end-rgb: 18, 18, 18;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+    to bottom,
+    rgb(var(--background-start-rgb)),
+    rgb(var(--background-end-rgb))
+  );
+  font-family: 'Inter', sans-serif;
+}
+
+.dark body {
+  background-color: #121212;
+  color: #f1f1f1;
+}
+
+.dark .bg-white {
+  background-color: #1e1e1e;
+}
+
+.dark .text-gray-900 {
+  color: #f1f1f1;
+}
+
+.dark .text-gray-700 {
+  color: #e0e0e0;
+}
+
+.dark .text-gray-600 {
+  color: #d0d0d0;
+}
+
+.dark .text-gray-500 {
+  color: #b0b0b0;
+}
+
+.dark .border-gray-200 {
+  border-color: #2a2a2a;
+}
+
+.dark .border-gray-300 {
+  border-color: #333333;
+}
+
+.dark .hover\:bg-gray-100:hover {
+  background-color: #2a2a2a;
+}
+
+.dark .hover\:bg-gray-200:hover {
+  background-color: #333333;
+}
+
+.dark .focus\:ring-gray-500:focus {
+  --tw-ring-color: #4a4a4a;
+}
+
+.dark .focus\:border-gray-500:focus {
+  border-color: #4a4a4a;
+}
+
+/* Base styles */
+@layer base {
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold;
+  }
+
+  h1 {
+    @apply text-4xl;
+  }
+
+  h2 {
+    @apply text-3xl;
+  }
+
+  h3 {
+    @apply text-2xl;
+  }
+
+  h4 {
+    @apply text-xl;
+  }
+
+  h5 {
+    @apply text-lg;
+  }
+
+  h6 {
+    @apply text-base;
+  }
+
+  p {
+    @apply text-base;
+  }
+
+  a {
+    @apply text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200;
+  }
+
+  button {
+    @apply transition-all duration-300;
+  }
+
+  input, select, textarea {
+    @apply transition-all duration-200;
+  }
+}
+
+/* Custom components */
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  .btn-primary {
+    @apply bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-200 dark:bg-[#2A2A2A] text-gray-900 dark:text-[#E0E0E0] hover:bg-gray-300 dark:hover:bg-[#333333] focus:ring-gray-500;
+  }
+
+  .card {
+    @apply bg-white dark:bg-[#2A2A2A] rounded-lg shadow-lg overflow-hidden;
+  }
+
+  .input {
+    @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#2A2A2A] text-gray-900 dark:text-[#E0E0E0] placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+  }
+
+  .select {
+    @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-[#2A2A2A] text-gray-900 dark:text-[#E0E0E0] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+  }
+}
+
+/* Animations */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Base styles */
+:root {
+  /* Light mode */
+  --foreground-rgb: 0, 0, 0;
+  --background-rgb: 255, 255, 255;
+  --card-background-rgb: 245, 245, 245;
+}
+
+/* Dark mode styles */
+.dark {
+  --foreground-rgb: 241, 241, 241;
+  --background-rgb: 15, 15, 15;
+  --card-background-rgb: 30, 30, 30;
+}
+
+/* Body styles */
+body {
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-rgb));
+}
+
+/* Card styles */
+.card {
+  background: rgb(var(--card-background-rgb));
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+/* Smooth transitions */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease;
+} 

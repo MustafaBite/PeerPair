@@ -103,14 +103,26 @@ export function cn(...inputs: ClassValue[]) {
 // Tema değişkenleri
 export const themeVariables = {
   light: {
-    '--foreground-rgb': '0, 0, 0',
-    '--background-start-rgb': '214, 219, 220',
-    '--background-end-rgb': '255, 255, 255',
+    '--foreground-rgb': '45, 45, 45',
+    '--background-start-rgb': '255, 255, 255',
+    '--background-end-rgb': '244, 244, 244',
+    '--text-primary': '#2D2D2D',
+    '--text-secondary': '#4B5563',
+    '--background-primary': '#FFFFFF',
+    '--background-secondary': '#F4F4F4',
+    '--border-color': '#E5E7EB',
+    '--card-shadow': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
   },
   dark: {
-    '--foreground-rgb': '255, 255, 255',
-    '--background-start-rgb': '0, 0, 0',
-    '--background-end-rgb': '0, 0, 0',
+    '--foreground-rgb': '224, 224, 224',
+    '--background-start-rgb': '30, 30, 46',
+    '--background-end-rgb': '18, 18, 18',
+    '--text-primary': '#E0E0E0',
+    '--text-secondary': '#9CA3AF',
+    '--background-primary': '#1E1E2E',
+    '--background-secondary': '#121212',
+    '--border-color': '#374151',
+    '--card-shadow': '0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1)',
   },
 };
 

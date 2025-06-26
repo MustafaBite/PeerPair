@@ -1,75 +1,183 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface User {
-  firstName: string;
-  lastName: string;
+  id: number;
+  fullName: string;
   email: string;
+  faculty: string;
+  grade: number;
 }
 
 interface AuthContextType {
   user: User | null;
   isLoggedIn: boolean;
-  login: (email: string, password: string, firstName: string, lastName: string) => Promise<void>;
-  register: (fullName: string, email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (userData: {
+    fullName: string;
+    email: string;
+    password: string;
+    faculty: string;
+    grade: number;
+  }) => Promise<void>;
   logout: () => void;
+  updateProfile: (userData: Partial<User>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+async function fetchWithRetry(url: string, options: RequestInit, retries = 3): Promise<Response> {
+  try {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response;
+  } catch (error) {
+    if (retries > 0) {
+      console.log(`Retrying... ${retries} attempts left`);
+      await new Promise(resolve => setTimeout(resolve, 1000)); // 1 saniye bekle
+      return fetchWithRetry(url, options, retries - 1);
+    }
+    throw error;
+  }
+}
+
+async function handleResponse<T>(response: Response): Promise<T> {
+  const contentType = response.headers.get('content-type');
+  if (!contentType || !contentType.includes('application/json')) {
+    throw new Error('API yanıtı JSON formatında değil');
+  }
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || 'Bir hata oluştu');
+  }
+  return data;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
 
-  const login = async (email: string, password: string, firstName: string, lastName: string) => {
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetchWithRetry(`${API_BASE_URL}/auth/profile`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+        .then(handleResponse)
+        .then(data => {
+          setUser(data.user);
+          setIsLoggedIn(true);
+        })
+        .catch(error => {
+          console.error('Profile fetch error:', error);
+          localStorage.removeItem('token');
+          setUser(null);
+          setIsLoggedIn(false);
+        });
+    }
+  }, []);
+
+  const login = async (email: string, password: string) => {
     try {
-      if (!email || !password || !firstName || !lastName) {
-        throw new Error('Tüm alanlar gereklidir');
-      }
+      const data = await handleResponse<{ token: string; user: User }>(
+        await fetchWithRetry(`${API_BASE_URL}/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, password })
+        })
+      );
 
-      if (password.length < 6) {
-        throw new Error('Şifre en az 6 karakter olmalıdır');
-      }
-
-      // Burada gerçek bir API çağrısı yapılabilir
-      setUser({ firstName, lastName, email });
+      localStorage.setItem('token', data.token);
+      setUser(data.user);
       setIsLoggedIn(true);
     } catch (error) {
+      console.error('Login error:', error);
       throw error;
     }
   };
 
-  const register = async (fullName: string, email: string, password: string) => {
+  const register = async (userData: {
+    fullName: string;
+    email: string;
+    password: string;
+    faculty: string;
+    grade: number;
+  }) => {
     try {
-      if (!fullName || !email || !password) {
-        throw new Error('Tüm alanlar gereklidir');
-      }
+      const data = await handleResponse<{ token: string; user: User }>(
+        await fetchWithRetry(`${API_BASE_URL}/auth/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(userData)
+        })
+      );
 
-      if (password.length < 6) {
-        throw new Error('Şifre en az 6 karakter olmalıdır');
-      }
-
-      if (fullName.length < 3) {
-        throw new Error('Ad soyad en az 3 karakter olmalıdır');
-      }
-
-      // Burada gerçek bir API çağrısı yapılabilir
-      const [firstName, lastName] = fullName.split(' ');
-      setUser({ firstName, lastName: lastName || '', email });
+      localStorage.setItem('token', data.token);
+      setUser(data.user);
       setIsLoggedIn(true);
     } catch (error) {
+      console.error('Register error:', error);
       throw error;
     }
   };
 
   const logout = () => {
+    localStorage.removeItem('token');
     setUser(null);
     setIsLoggedIn(false);
+    router.push('/');
+  };
+
+  const updateProfile = async (userData: Partial<User>) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('Oturum açmanız gerekiyor');
+    }
+
+    try {
+      const data = await handleResponse<{ user: User }>(
+        await fetchWithRetry(`${API_BASE_URL}/auth/profile`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(userData)
+        })
+      );
+
+      setUser(data.user);
+    } catch (error) {
+      console.error('Profile update error:', error);
+      throw error;
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoggedIn, login, register, logout }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoggedIn,
+        login,
+        register,
+        logout,
+        updateProfile
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
