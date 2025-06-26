@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sohbetler</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+      background: #f6f8fc;
+    }
+    .sohbetler-bg {
+      min-height: 100vh;
+      background: #f6f8fc;
+      padding-bottom: 40px;
+    }
+    .sohbetler-navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      padding: 18px 32px;
+      box-shadow: 0 2px 8px rgba(11,36,71,0.04);
+      border-radius: 0 0 18px 18px;
+      margin-bottom: 32px;
+    }
+    .sohbetler-navbar .navbar-logo {
+      font-weight: bold;
+      color: #0b2447;
+      font-size: 1.3rem;
+    }
+    .sohbetler-navbar ul {
+      list-style: none;
+      display: flex;
+      gap: 32px;
+      margin: 0;
+      padding: 0;
+    }
+    .sohbetler-navbar li {
+      color: #0b2447;
+      font-weight: 500;
+      cursor: pointer;
+      transition: color 0.2s;
+      padding-bottom: 2px;
+      border-bottom: 2px solid transparent;
+      display: inline-block;
+    }
+    .sohbetler-navbar li.active,
+    .sohbetler-navbar li:hover {
+      color: #19376d;
+      border-bottom: 2px solid #0b2447;
+    }
+    .sohbetler-title {
+      color: #0b2447;
+      text-align: center;
+      margin-bottom: 32px;
+      font-size: 2.2rem;
+      font-weight: 700;
+    }
+    .sohbetler-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+    @media (max-width: 900px) {
+      .sohbetler-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 600px) {
+      .sohbetler-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .sohbet-kart {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 2px 12px rgba(11,36,71,0.07);
+      padding: 28px 22px 22px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    .sohbet-kullanici {
+      font-weight: 600;
+      color: #0b2447;
+      font-size: 1.1rem;
+    }
+    .sohbet-mesaj {
+      color: #19376d;
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+    .sohbet-btn {
+      background: #0b2447;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 22px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: auto;
+    }
+    .sohbet-btn:hover {
+      background: #19376d;
+    }
+  </style>
+</head>
+<body>
+  <div class="sohbetler-bg">
+    <nav class="sohbetler-navbar">
+      <div class="navbar-logo">Üniversite Portalı</div>
+      <ul>
+        <li>Fakülteler</li>
+        <li>Hakkımızda</li>
+        <li>İletişim</li>
+        <li class="active">Sohbetler</li>
+      </ul>
+    </nav>
+    <h1 class="sohbetler-title">Sohbetler</h1>
+    <div class="sohbetler-grid">
+      <div class="sohbet-kart">
+        <div class="sohbet-kullanici">Ahmet Y.</div>
+        <div class="sohbet-mesaj">Selam! Tanışalım mı?</div>
+        <button class="sohbet-btn">Mesaj Gönder</button>
+      </div>
+      <div class="sohbet-kart">
+        <div class="sohbet-kullanici">Zeynep K.</div>
+        <div class="sohbet-mesaj">Merhaba, ortak derslerimiz var mı?</div>
+        <button class="sohbet-btn">Mesaj Gönder</button>
+      </div>
+      <div class="sohbet-kart">
+        <div class="sohbet-kullanici">Mehmet T.</div>
+        <div class="sohbet-mesaj">Fakülte grubuna katılmak ister misin?</div>
+        <button class="sohbet-btn">Mesaj Gönder</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
